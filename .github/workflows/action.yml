@@ -17,3 +17,12 @@ jobs:
         uses: ./
         with:
           paths: tests/fixtures/clean.swift
+
+  consumer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use the published major tag, exactly like a consumer
+        uses: hfip/rtl-lint@v1
+        with:
+          paths: tests/fixtures/clean.swift
