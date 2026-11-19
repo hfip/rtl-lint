@@ -1,50 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="rtl-lint — catch RTL layout bugs before your Arabic users do">
-  <title>rtl-lint — catch RTL layout bugs before your Arabic users do</title>
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="320" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#070b18"/>
-      <stop offset="0.55" stop-color="#0c1631"/>
-      <stop offset="1" stop-color="#101a34"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="540" y1="0" x2="1180" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#22d3ee"/>
-      <stop offset="1" stop-color="#8b5cf6"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(1110 40) rotate(90) scale(300)">
-      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.22"/>
-      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="280" viewBox="0 0 1280 280" role="img" aria-label="rtl-lint marking a .left alignment on ruled paper">
+  <title>rtl-lint marking a .left alignment on ruled paper</title>
+  <rect width="1280" height="280" fill="#f7f3e9"/>
 
-  <rect width="1280" height="320" fill="url(#bg)"/>
-  <rect width="1280" height="320" fill="url(#glow)"/>
-
-  <g stroke="#ffffff" stroke-opacity="0.04" stroke-width="1">
-    <path d="M0 80h1280M0 160h1280M0 240h1280"/>
-    <path d="M160 0v320M320 0v320M480 0v320M640 0v320M800 0v320M960 0v320M1120 0v320"/>
+  <g stroke="#e6dfcd">
+    <path d="M0 56h1280M0 96h1280M0 136h1280M0 176h1280M0 216h1280M0 256h1280"/>
   </g>
+  <path d="M104 0v280" stroke="#e3b1a6"/>
 
-  <rect width="1280" height="4" fill="url(#accent)"/>
+  <text x="40" y="40" font-family="Georgia, 'Times New Roman', serif" font-size="15" letter-spacing="4" fill="#8a7f6b">RTL-LINT</text>
+  <text x="40" y="262" font-family="Georgia, 'Times New Roman', serif" font-size="14" fill="#a1937c" font-style="italic">a linter for the mirrored half of your UI</text>
 
-  <g font-family="'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace">
-    <rect x="64" y="56" width="300" height="30" rx="15" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12"/>
-    <text x="82" y="76" font-size="12" letter-spacing="2.4" fill="#67e8f9">SWIFT &#183; STORYBOARDS &#183; XIB</text>
-    <text x="60" y="178" font-size="84" font-weight="700" letter-spacing="-3" fill="#f8fafc">rtl<tspan fill="url(#accent)">-lint</tspan></text>
-  </g>
+  <text x="150" y="132" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="30" fill="#1f2937">label.textAlignment = <tspan fill="#b91c1c">.left</tspan></text>
 
-  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
-    <text x="64" y="218" font-size="20" fill="#94a3b8">Catch left/right assumptions before your Arabic users do.</text>
-    <text x="64" y="258" font-size="13" letter-spacing="1.6" fill="#64748b">ALIGNMENT &#183; ANCHORS &#183; FORCED DIRECTION &#183; MIRRORING</text>
-  </g>
+  <path d="M538 146 q4.5 -9 9 0 t9 0 t9 0 t9 0 t9 0 t9 0 t9 0 t9 0 t9 0 t9 0"
+        fill="none" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/>
 
-  <g>
-    <rect x="700" y="72" width="516" height="176" rx="18" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.1"/>
-    <text x="732" y="108" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="11" letter-spacing="2.2" fill="#64748b">BEFORE</text>
-    <text x="732" y="141" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="17" fill="#f87171">.textAlignment = .left</text>
-    <path d="M732 160h452" stroke="#ffffff" stroke-opacity="0.08"/>
-    <text x="732" y="188" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="11" letter-spacing="2.2" fill="#64748b">AFTER</text>
-    <text x="732" y="221" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="17" fill="#4ade80">.textAlignment = .leading</text>
-    <rect x="1096" y="196" width="88" height="24" rx="12" fill="#4ade80" fill-opacity="0.12" stroke="#4ade80" stroke-opacity="0.35"/>
-    <text x="1113" y="212" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="11" fill="#4ade80">fixed</text>
+  <rect x="664" y="96" width="104" height="30" rx="3" fill="#b91c1c"/>
+  <text x="716" y="116" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#fdf6ea">RTL001</text>
+
+  <text x="150" y="182" font-family="Georgia, 'Times New Roman', serif" font-size="19" font-style="italic" fill="#9a3412">use .leading, it flips with the language</text>
+
+  <g transform="rotate(-7 1010 150)">
+    <text x="1010" y="150" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="21" font-style="italic" fill="#a8a29e">"looks fine in</text>
+    <text x="1010" y="180" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="21" font-style="italic" fill="#a8a29e">English, though"</text>
   </g>
 </svg>
