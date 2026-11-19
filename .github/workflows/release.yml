@@ -9,6 +9,8 @@ permissions:
 
 jobs:
   release:
+    # Major floating tags (v1) must not create a release; only vX.Y.Z does.
+    if: contains(github.ref_name, '.')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -44,11 +44,22 @@ class Config:
 
     @classmethod
     def load(cls, path: Optional[Path] = None) -> "Config":
-        candidate = Path(path) if path is not None else Path.cwd() / ".rtllint.json"
-        if not candidate.exists():
-            if path is not None:
+        if path is not None:
+            candidate = Path(path)
+            if not candidate.exists():
                 raise ConfigError("config file not found: %s" % candidate)
-            return cls()
+            return cls._from_file(candidate)
+
+        # Walk up from the current directory so running from a subdirectory still
+        # finds the project configuration.
+        for directory in (Path.cwd(), *Path.cwd().parents):
+            candidate = directory / ".rtllint.json"
+            if candidate.is_file():
+                return cls._from_file(candidate)
+        return cls()
+
+    @classmethod
+    def _from_file(cls, candidate: Path) -> "Config":
         try:
             payload = json.loads(candidate.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as error:
@@ -186,6 +197,165 @@ def discover(paths: Sequence[str], exclude: Sequence[str] = ()) -> List[Tuple[Pa
     return found
 
 
+def _count_hashes(line: str, index: int) -> int:
+    count = 0
+    while index + count < len(line) and line[index + count] == "#":
+        count += 1
+    return count
+
+
+def _is_raw_string_start(line: str, index: int) -> bool:
+    count = _count_hashes(line, index)
+    return index + count < len(line) and line[index + count] == '"'
+
+
+def swift_code_mask(lines: Sequence[str]) -> List[List[bool]]:
+    """Mark characters that are real code (not comments or string literals).
+
+    Rewriting `.left` inside a comment or a string literal is never what a user
+    wants, so matches in those regions are ignored by both reporting and `--fix`.
+    Handles `//`, nested `/* */`, `"…"`, `\"` escapes, `\"\"\"…\"\"\"` and `#"…"#`.
+    """
+    masks: List[List[bool]] = []
+    state = "code"
+    depth = 0
+    hashes = 0
+
+    for line in lines:
+        length = len(line)
+        mask = [True] * length
+        index = 0
+
+        while index < length:
+            if state == "code":
+                if line.startswith("//", index):
+                    for position in range(index, length):
+                        mask[position] = False
+                    index = length
+                elif line.startswith("/*", index):
+                    mask[index] = False
+                    if index + 1 < length:
+                        mask[index + 1] = False
+                    state, depth = "block", 1
+                    index += 2
+                elif line.startswith('"""', index):
+                    for position in range(index, min(index + 3, length)):
+                        mask[position] = False
+                    state = "multiline"
+                    index += 3
+                elif line[index] == "#" and _is_raw_string_start(line, index):
+                    hashes = _count_hashes(line, index)
+                    for position in range(index, min(index + hashes + 1, length)):
+                        mask[position] = False
+                    state = "raw"
+                    index += hashes + 1
+                elif line[index] == '"':
+                    mask[index] = False
+                    state = "string"
+                    index += 1
+                else:
+                    index += 1
+            elif state == "block":
+                if line.startswith("*/", index):
+                    mask[index] = False
+                    if index + 1 < length:
+                        mask[index + 1] = False
+                    index += 2
+                    depth -= 1
+                    if depth == 0:
+                        state = "code"
+                elif line.startswith("/*", index):
+                    mask[index] = False
+                    if index + 1 < length:
+                        mask[index + 1] = False
+                    depth += 1
+                    index += 2
+                else:
+                    mask[index] = False
+                    index += 1
+            elif state == "string":
+                mask[index] = False
+                if line[index] == "\\" and index + 1 < length:
+                    mask[index + 1] = False
+                    index += 2
+                elif line[index] == '"':
+                    state = "code"
+                    index += 1
+                else:
+                    index += 1
+            elif state == "multiline":
+                if line.startswith('"""', index):
+                    for position in range(index, min(index + 3, length)):
+                        mask[position] = False
+                    index += 3
+                    state = "code"
+                else:
+                    mask[index] = False
+                    index += 1
+            else:  # raw string
+                mask[index] = False
+                if line.startswith('"' + "#" * hashes, index):
+                    for position in range(index, min(index + 1 + hashes, length)):
+                        mask[position] = False
+                    index += 1 + hashes
+                    state = "code"
+                else:
+                    index += 1
+
+        masks.append(mask)
+        if state == "string":
+            # Swift strings cannot span lines; recover instead of masking the file.
+            state = "code"
+
+    return masks
+
+
+def xml_code_mask(lines: Sequence[str]) -> List[List[bool]]:
+    """Mark characters outside XML comments."""
+    masks: List[List[bool]] = []
+    in_comment = False
+
+    for line in lines:
+        length = len(line)
+        mask = [True] * length
+        index = 0
+
+        if in_comment:
+            end = line.find("-->")
+            if end == -1:
+                mask = [False] * length
+                masks.append(mask)
+                continue
+            for position in range(0, end + 3):
+                mask[position] = False
+            in_comment = False
+            index = end + 3
+
+        while index < length:
+            start = line.find("<!--", index)
+            if start == -1:
+                break
+            end = line.find("-->", start + 4)
+            if end == -1:
+                for position in range(start, length):
+                    mask[position] = False
+                in_comment = True
+                break
+            for position in range(start, end + 3):
+                mask[position] = False
+            index = end + 3
+
+        masks.append(mask)
+
+    return masks
+
+
+def _is_code(mask: Sequence[bool], start: int, end: int) -> bool:
+    if start < 0 or end <= start or end > len(mask):
+        return False
+    return bool(mask[start]) and bool(mask[end - 1])
+
+
 def _suppression(line: str) -> Union[None, bool, set]:
     match = SUPPRESS_RE.search(line)
     if match is None:
@@ -220,7 +390,11 @@ def scan_file(
     issues: List[Issue] = []
     spans: Dict[int, List[Tuple[int, int]]] = {}
 
-    for number, line in enumerate(text.split("\n"), start=1):
+    lines = text.split("\n")
+    masks = swift_code_mask(lines) if kind == SWIFT else xml_code_mask(lines)
+
+    for number, line in enumerate(lines, start=1):
+        mask = masks[number - 1]
         suppression = _suppression(line)
         if suppression is True:
             continue
@@ -232,6 +406,8 @@ def scan_file(
                 continue
             for match in rule.pattern.finditer(line):
                 if match.start() == match.end():
+                    continue
+                if not _is_code(mask, match.start(), match.end()):
                     continue
                 if _overlaps(spans, number, match.start(), match.end()):
                     continue

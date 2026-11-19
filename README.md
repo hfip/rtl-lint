@@ -97,7 +97,8 @@ Use it for genuinely LTR-only content (code blocks, numeric tables, media contro
 
 ## Configuration
 
-`.rtllint.json` in the project root (or pass `--config`):
+`.rtllint.json`, discovered by walking up from the current directory (or passed with
+`--config`):
 
 ```json
 {
@@ -110,6 +111,17 @@ Use it for genuinely LTR-only content (code blocks, numeric tables, media contro
 `Pods/`, `Carthage/`, `.build/`, `DerivedData/` and `node_modules/` are always skipped.
 
 ## CI
+
+One line, via the bundled composite action:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: hfip/rtl-lint@v1
+  with:
+    paths: Sources
+```
+
+Or run it yourself:
 
 ```yaml
 - uses: actions/checkout@v4
@@ -131,6 +143,10 @@ testing in Arabic is still how you catch truncation, Arabic typography and BiDi 
 SwiftLint is excellent for per-file style rules. `rtl-lint` adds project-wide discovery,
 exclusion logic, inline suppression for two codes at once, storyboard scanning and
 `--fix` in one zero-dependency binary-less tool you can run from any CI.
+
+**Does it report findings inside comments or string literals?**
+No. Only real code is scanned: `//`, `/* */`, `"…"`, `"""…"""`, `#"…"#` and XML comments are
+skipped, so `--fix` can never rewrite a log message or a test fixture.
 
 **Will `--fix` break my layout?**
 Only `RTL001`–`RTL003` are rewritten, and `.leading` / `.trailing` are the correct

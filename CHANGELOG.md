@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-11-19
+
+### Added
+
+- Composite GitHub Action (`action.yml`): `uses: hfip/rtl-lint@v1` with `paths` and `args`
+  inputs, plus a CI job that dogfoods it against a clean fixture.
+
+### Fixed
+
+- Matches inside comments and string literals were reported, and `--fix` rewrote them —
+  it could change a log message or a fixture. Only real code is scanned now (`//`,
+  nested `/* */`, `"…"`, `"""…"""`, `#"…"#`, XML comments).
+- `.rtllint.json` is now discovered by walking up from the current directory, so running
+  from a subdirectory still finds the project configuration.
+- 44 tests.
+
 ## [0.1.0] - 2026-11-19
 
 ### Added

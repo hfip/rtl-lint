@@ -256,3 +256,82 @@ def test_discover_supported_suffixes(tmp_path, name):
     (tmp_path / name).write_text("", encoding="utf-8")
     found = discover([str(tmp_path)])
     assert [path.name for path, _ in found] == [name]
+
+
+def test_comments_are_ignored(tmp_path):
+    report = scan(
+        tmp_path,
+        "// label.textAlignment = .left\n"
+        "/// uses view.leftAnchor somewhere\n"
+        "label.textAlignment = .leading\n",
+    )
+    assert report.issues == []
+
+
+def test_string_literals_are_ignored(tmp_path):
+    report = scan(tmp_path, 'let sample = "label.textAlignment = .left"\n')
+    assert report.issues == []
+
+
+def test_block_comments_are_ignored(tmp_path):
+    report = scan(
+        tmp_path,
+        "/*\n  view.leftAnchor.constraint(equalTo: view.leftAnchor)\n*/\n",
+    )
+    assert report.issues == []
+
+
+def test_multiline_strings_are_ignored(tmp_path):
+    report = scan(
+        tmp_path,
+        'let sql = """\n  view.leftAnchor.constraint(equalTo: view.leftAnchor)\n"""\n',
+    )
+    assert report.issues == []
+
+
+def test_raw_strings_are_ignored(tmp_path):
+    report = scan(tmp_path, 'let sample = #"label.textAlignment = .left"#\n')
+    assert report.issues == []
+
+
+def test_code_before_an_inline_comment_is_still_reported(tmp_path):
+    report = scan(tmp_path, "label.textAlignment = .left // temporary\n")
+    assert [issue.code for issue in report.issues] == ["RTL001"]
+
+
+def test_fix_never_rewrites_strings_or_comments(tmp_path):
+    path = tmp_path / "View.swift"
+    path.write_text(
+        "// label.textAlignment = .left\n"
+        'let sample = "label.textAlignment = .left"\n'
+        "label.textAlignment = .left\n",
+        encoding="utf-8",
+    )
+    report = run([str(path)], Config(), fix=True)
+    assert report.fixed == 1
+    assert path.read_text(encoding="utf-8") == (
+        "// label.textAlignment = .left\n"
+        'let sample = "label.textAlignment = .left"\n'
+        "label.textAlignment = .leading\n"
+    )
+
+
+def test_storyboard_comments_are_ignored(tmp_path):
+    report = scan(
+        tmp_path,
+        '<!-- <label textAlignment="right"/> -->\n',
+        name="Main.storyboard",
+    )
+    assert report.issues == []
+
+
+def test_config_is_found_from_a_subdirectory(tmp_path, monkeypatch):
+    (tmp_path / ".rtllint.json").write_text('{"ignore": ["RTL001"]}', encoding="utf-8")
+    nested = tmp_path / "App" / "Feature"
+    nested.mkdir(parents=True)
+    path = nested / "View.swift"
+    path.write_text("label.textAlignment = .left\n", encoding="utf-8")
+
+    monkeypatch.chdir(nested)
+    report = run([str(path)], Config.load())
+    assert report.issues == []
