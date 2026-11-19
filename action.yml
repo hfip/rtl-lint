@@ -1,5 +1,5 @@
 name: rtl-lint
-description: Catch left/right layout assumptions in Swift and storyboards before your Arabic users do
+description: Finds left/right layout assumptions in Swift and storyboards that never mirror in Arabic
 author: Abdulluh.X
 
 branding:
