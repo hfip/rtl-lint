@@ -22,6 +22,10 @@ from .migrate import (
 from .scanner import Config, ConfigError, run
 
 
+def _count(value: int, singular: str, plural: str) -> str:
+    return "%d %s" % (value, singular if value == 1 else plural)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rtl-lint migrate",
@@ -109,11 +113,14 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
             return 2
 
         if not args.json:
-            print("Scanned %d file(s)." % plan.files_scanned)
-            print("  %d mechanical fix(es)" % len(plan.mechanical))
-            print("  %d finding(s) that need a decision" % len(plan.decisions))
+            print("Scanned %s." % _count(plan.files_scanned, "file", "files"))
+            print("  %s" % _count(len(plan.mechanical), "mechanical fix", "mechanical fixes"))
+            print("  %s needing a decision" % _count(len(plan.decisions), "finding", "findings"))
             if plan.strings:
-                print("  %d user-facing literal(s)" % len(plan.strings))
+                print(
+                    "  %s"
+                    % _count(len(plan.strings), "user-facing literal", "user-facing literals")
+                )
             print()
             if args.no_branch:
                 print("Applied on the current branch.")
@@ -132,14 +139,18 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         report_path.write_text(report_text, encoding="utf-8")
 
     if not args.json:
-        print("Scanned %d file(s)." % plan.files_scanned)
+        groups = len({issue.code for issue in plan.mechanical})
+        print("Scanned %s." % _count(plan.files_scanned, "file", "files"))
         print(
-            "  %d mechanical fix(es) in %d group(s)"
-            % (len(plan.mechanical), len({issue.code for issue in plan.mechanical}))
+            "  %s in %s"
+            % (
+                _count(len(plan.mechanical), "mechanical fix", "mechanical fixes"),
+                _count(groups, "group", "groups"),
+            )
         )
-        print("  %d finding(s) that need a decision" % len(plan.decisions))
+        print("  %s needing a decision" % _count(len(plan.decisions), "finding", "findings"))
         if plan.strings:
-            print("  %d user-facing literal(s)" % len(plan.strings))
+            print("  %s" % _count(len(plan.strings), "user-facing literal", "user-facing literals"))
         print()
         if report_path is not None:
             print("Plan written to %s" % report_path)
