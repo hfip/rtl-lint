@@ -51,7 +51,7 @@ cd rtl-lint
 pipx install .
 ```
 
-Python 3.9+, no dependencies. A pytest suite covers 44 cases.
+Python 3.9+, no dependencies. A pytest suite covers 56 cases.
 
 ## Usage
 
@@ -64,6 +64,46 @@ rtl-lint --format json .            # or --format github for annotations
 ```
 
 Exit codes: `0` clean, `1` findings, `2` bad path or config.
+
+## Migrating an app that has never seen Arabic
+
+`--fix` changes files. `migrate` answers the other question: what does the work look like?
+
+```bash
+rtl-lint migrate Sources/
+```
+
+```
+Scanned 214 file(s).
+  112 mechanical fix(es) in 3 group(s)
+  19 finding(s) that need a decision
+  312 user-facing literal(s)
+
+Plan written to RTL-MIGRATION.md
+```
+
+The plan has three parts: safe rewrites with counts per rule, findings that need a human
+decision (forced direction, manual mirroring, storyboards), and what the tool cannot check
+(image mirroring, number formatting, truncation). It also lists user-facing string literals so
+you can confirm they are in the catalog.
+
+When the plan looks right:
+
+```bash
+rtl-lint migrate Sources/ --apply
+```
+
+That creates a `rtl-prep` branch, one commit per rule group, and a final commit with the plan.
+Nothing is pushed. If the branch exists or the tree is dirty, it stops instead of guessing;
+`--force` and `--no-branch` are there when you know better.
+
+```
+Created branch rtl-prep
+  1. RTL001 alignment (64 fixes)
+  2. RTL002 explicit enums (11 fixes)
+  3. RTL003 anchors and attributes (37 fixes)
+  4. RTL-MIGRATION.md
+```
 
 ## Skipping things
 

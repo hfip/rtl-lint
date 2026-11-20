@@ -170,8 +170,14 @@ def render_rules() -> None:
 
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
+    raw = list(argv) if argv is not None else sys.argv[1:]
+    if raw and raw[0] == "migrate":
+        from .migrate_cli import main as migrate_main
+
+        return migrate_main(raw[1:])
+
     parser = build_parser()
-    args = parser.parse_args(list(argv) if argv is not None else None)
+    args = parser.parse_args(raw)
 
     if args.list_rules:
         render_rules()

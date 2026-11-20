@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-20
+
+### Added
+
+- `rtl-lint migrate`: writes `RTL-MIGRATION.md` with mechanical fixes, decisions and what the
+  tool cannot check, including user-facing string literals.
+- `migrate --apply` creates a branch and one commit per rule group, plus the plan, and refuses
+  to run on a dirty tree or an existing branch.
+- `--no-branch`, `--force`, `--report`, `--no-report` and `--json` for the migration command.
+- 12 tests for the migration flow, 56 in total.
+
 ## [0.1.1] - 2026-11-19
 
 ### Added
