@@ -141,7 +141,9 @@ are files over 2 MB.
 ```
 
 The action installs the tagged version and runs with `--format github`, so every finding
-lands on the right line of the pull request diff. The repository dogfoods both `./` and
+lands on the right line of the pull request diff. If you also want one number covering
+translation coverage and plurals, [arabic-readiness](https://github.com/hfip/arabic-readiness)
+combines this tool with `xcstrings-audit`. The repository dogfoods both `./` and
 the published `@v1` tag on every push.
 
 ## What it will not catch
